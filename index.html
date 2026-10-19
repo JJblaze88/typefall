@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Typefall — the typing test where failure has gravity</title>
+  <meta name="description" content="A fun typing test. Hit your target speed and accuracy and you get confetti. Miss it and every letter falls to the floor.">
+  <meta name="theme-color" content="#0B0E13">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Typefall">
+  <meta property="og:title" content="Typefall — the typing test where failure has gravity">
+  <meta property="og:description" content="Hit your target and get confetti. Miss it and every letter falls to the floor.">
+  <meta property="og:image" content="og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Typefall logo with letters tumbling onto a pile">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Typefall — the typing test where failure has gravity">
+  <meta name="twitter:description" content="Hit your target and get confetti. Miss it and every letter falls to the floor.">
+  <meta name="twitter:image" content="og.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="palette-strip" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+
+  <header class="top">
+    <a class="logo" href="./" aria-label="Typefall, start over">
+      <span class="logo-type">type</span><span class="logo-fall" aria-hidden="true"><span>f</span><span>a</span><span>l</span><span>l</span></span>
+    </a>
+    <nav class="controls" aria-label="Test settings">
+      <div class="seg" role="group" aria-label="Test length">
+        <button type="button" data-mode="time" data-value="15">15s</button>
+        <button type="button" data-mode="time" data-value="30">30s</button>
+        <button type="button" data-mode="time" data-value="60">60s</button>
+        <button type="button" data-mode="words" data-value="25">25 words</button>
+      </div>
+      <div class="seg" role="group" aria-label="Target speed in words per minute">
+        <span class="seg-label">target</span>
+        <button type="button" data-target="20">20</button>
+        <button type="button" data-target="30">30</button>
+        <button type="button" data-target="45">45</button>
+        <button type="button" data-target="60">60</button>
+      </div>
+    </nav>
+    <p class="pb" id="pb" aria-live="polite">No best yet</p>
+  </header>
+
+  <main class="main">
+    <section class="hud" aria-label="Live stats">
+      <div class="stat"><span class="stat-val" id="s-time">30</span><span class="stat-lbl" id="s-time-lbl">seconds</span></div>
+      <div class="stat"><span class="stat-val" id="s-wpm">0</span><span class="stat-lbl">wpm</span></div>
+      <div class="stat"><span class="stat-val" id="s-acc">100%</span><span class="stat-lbl">accuracy</span></div>
+      <div class="stat"><span class="stat-val" id="s-streak">0</span><span class="stat-lbl">streak</span></div>
+      <div class="meter combo" id="combo">
+        <div class="meter-head"><span>Combo</span><b id="combo-x">x1</b></div>
+        <div class="bar" role="progressbar" aria-label="Progress to next combo level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="combo-bar"><i id="combo-fill"></i></div>
+      </div>
+      <div class="meter stability" id="stability">
+        <div class="meter-head"><span>Stability</span><b id="stab-n">10/10</b></div>
+        <div class="pips" id="pips" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <section class="arena" id="arena" aria-label="Typing area">
+      <div class="words-wrap" id="words-wrap">
+        <div class="words" id="words" aria-hidden="true"><span class="caret" id="caret"></span></div>
+      </div>
+      <input id="input" class="hidden-input" type="text" aria-label="Type the words shown, separated by spaces" aria-describedby="rules"
+        autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="text" enterkeyhint="next">
+      <div class="focus-hint" id="focus-hint"><span>Click or tap here to keep typing</span></div>
+      <p class="hint-start" id="hint-start">Start typing. The clock starts on your first key.</p>
+    </section>
+
+    <p class="rules" id="rules">Pass with <b id="rule-wpm">30+ WPM</b> and <b>90%+ accuracy</b>. Make <b>10 mistakes</b> and everything falls down.</p>
+
+    <section class="results" id="results" hidden aria-labelledby="r-title">
+      <div class="r-head">
+        <p class="r-kicker" id="r-kicker">30s test</p>
+        <h2 id="r-title" tabindex="-1">Passed!</h2>
+        <p class="r-reason" id="r-reason"></p>
+        <span class="badge-pb" id="r-pb" hidden>New personal best!</span>
+      </div>
+      <div class="r-grid">
+        <div class="r-big"><span id="r-wpm">0</span><small>wpm</small></div>
+        <dl class="r-stats">
+          <div><dt>Accuracy</dt><dd id="r-acc">0%</dd></div>
+          <div><dt>Raw</dt><dd id="r-raw">0</dd></div>
+          <div><dt>Best streak</dt><dd id="r-streak">0</dd></div>
+          <div><dt>Max combo</dt><dd id="r-combo">x1</dd></div>
+          <div><dt>Characters</dt><dd id="r-chars" title="correct / incorrect / extra / missed">0/0/0/0</dd></div>
+          <div><dt>Time</dt><dd id="r-time">0s</dd></div>
+        </dl>
+      </div>
+      <figure class="spark">
+        <figcaption><span>WPM over time</span><span class="legend"><i class="lg-line"></i>you <i class="lg-target"></i>target <i class="lg-err"></i>mistake</span></figcaption>
+        <svg id="spark" viewBox="0 0 320 90" preserveAspectRatio="none" role="img" aria-label="WPM over time"></svg>
+      </figure>
+      <div class="r-actions">
+        <button type="button" class="btn primary" id="again">Try again <kbd>Tab</kbd></button>
+        <button type="button" class="btn" id="copy">Copy result</button>
+      </div>
+      <p class="poke-hint" id="poke-hint" hidden>Psst: click the pile.</p>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span><kbd>Tab</kbd> new test</span>
+    <span><kbd>Esc</kbd> same words again</span>
+    <span><kbd>Shift</kbd> + <kbd>Tab</kbd> leave the text box</span>
+  </footer>
+
+  <div id="fall-layer" class="fall-layer" aria-hidden="true"></div>
+  <canvas id="confetti" class="confetti" aria-hidden="true"></canvas>
+  <div id="sr" class="sr-only" aria-live="polite"></div>
+
+  <script src="vendor/matter.min.js" defer></script>
+  <script src="js/words.js" defer></script>
+  <script src="js/gravity.js" defer></script>
+  <script src="js/confetti.js" defer></script>
+  <script src="js/app.js" defer></script>
+</body>
+</html>
