@@ -24,6 +24,7 @@ A mistake is any wrong or extra character, plus a space typed on a word that isn
 - Confetti in the palette colours when you pass.
 - A results card with WPM, raw WPM, accuracy, best streak, max combo, a character breakdown and a WPM-over-time sparkline with your mistakes marked.
 - Personal best for each mode, saved in `localStorage` (passed runs only).
+- **Top 10 leaderboard** for each mode (15s, 30s, 60s, 25 words). Pass a test with a Top 10 score and a *Claim your spot!* box appears: type a nickname and your entry drops onto the board. Open it any time with the **Top 10** button. See [Leaderboard](#leaderboard).
 - Shortcuts: <kbd>Tab</kbd> new test, <kbd>Esc</kbd> same words again, <kbd>Shift</kbd>+<kbd>Tab</kbd> leaves the text box.
 - Mobile: tap the text to bring up the keyboard (a hidden input handles typing).
 - `prefers-reduced-motion`: no shaking, wobble or confetti, and the failure fall is a simple straight drop with no spin or bounce.
@@ -34,19 +35,46 @@ A mistake is any wrong or extra character, plus a space typed on a word that isn
 |---|---|---|---|---|
 | `#2274A5` | `#F75C03` | `#F1C40F` | `#D90368` | `#00CC66` |
 
+## Leaderboard
+
+Just a nickname and a score: no emails, accounts or personal data.
+
+- **Backend:** one Netlify Function, `netlify/functions/leaderboard.mjs`, at `/api/leaderboard`. Scores are stored in **Netlify Blobs** (store `typefall-leaderboard`, region `eu-central-1`, one key per mode). Netlify sets Blobs up automatically, so there's nothing to configure.
+  - `GET /api/leaderboard` returns the top 10 for every mode.
+  - `POST /api/leaderboard` with `{ mode, name, wpm, acc, target }` submits a passed score.
+- **Rules** (in `netlify/lib/leaderboard-core.mjs`, unit-tested):
+  - Ranked by WPM, then accuracy, then whoever got there first.
+  - Only passed tests: WPM must be at least the target, and accuracy must be 90 to 100.
+  - WPM over 250, an unknown mode or a malformed body is rejected.
+  - Each nickname keeps only its best score per mode. The top 50 are stored, and the top 10 are shown.
+  - Nicknames: 1 to 12 Latin letters, numbers, spaces or basic symbols. A small built-in word list blocks rude names, including leetspeak (`sh1t`), spacing (`f u c k`) and stretched letters (`fuuuck`).
+  - Each IP gets 5 submissions per minute. The limiter stores a salted hash of the IP, never the IP itself.
+  - There's a hidden honeypot field for bots.
+  - Writes use an ETag check with retries, so two scores sent at the same moment don't overwrite each other.
+  - Nicknames are always rendered with `textContent`, never `innerHTML`.
+- **Not tamper-proof.** The browser reports its own score, so someone determined can post a fake one with a script. The checks only stop obvious junk. To wipe a board, go to the Netlify UI → *Data & Storage → Blobs → typefall-leaderboard* and delete `board/<mode>`.
+- **Offline:** if the API can't be reached (opened from `file://`, a plain static server, or an outage), the board says "Leaderboard offline" and the typing test works as normal.
+
 ## Run locally
 
 It's static HTML, CSS and JS with no build step.
 
 ```bash
-python3 -m http.server 8000   # then open http://localhost:8000
+python3 -m http.server 8000   # the game only; the leaderboard shows "offline"
+```
+
+With the leaderboard (Netlify CLI, no login needed; scores go to a local sandbox in `.netlify/`, never the live site):
+
+```bash
+npm install
+npx netlify-cli dev --offline   # http://localhost:8888
 ```
 
 ## Deploy (Netlify)
 
 `netlify.toml` publishes the repo root (`publish = "."`) with no build command. In Netlify: **Add new site → Import an existing project → GitHub → typefall**, and keep the defaults.
 
-After the first deploy, change the `og:image` / `twitter:image` meta tags in `index.html` to the absolute URL (for example `https://<your-site>.netlify.app/og.png`). Some social networks ignore relative image URLs.
+Netlify installs `package.json` (just `@netlify/blobs`) and bundles the function automatically. The share-image tags use the absolute `https://typefall-play.netlify.app/og.png`. If the domain changes, update them in `index.html`.
 
 ## Tests
 
@@ -54,7 +82,12 @@ After the first deploy, change the `og:image` / `twitter:image` meta tags in `in
 
 ```bash
 pip install playwright && python3 tests/e2e.py   # CHROME=/path/to/chrome to override
+node --test tests/leaderboard-core.test.mjs       # leaderboard rules: ranking, validation, nickname filter, rate limit
+LEADERBOARD_RATE_LIMIT=1000 npx netlify-cli dev --offline &   # then:
+python3 tests/leaderboard_e2e.py                  # API + claim flow + offline fallback, seeds fake demo names locally
 ```
+
+`e2e.py` also checks that the page copes with no leaderboard API at all.
 
 ## Credits
 

@@ -2,6 +2,37 @@
   publish = "."
   command = ""
 
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+[dev]
+  framework = "#static"
+  publish = "."
+  port = 8888
+
+# The site publishes the repo root, so hide the non-site folders from visitors.
+[[redirects]]
+  from = "/node_modules/*"
+  to = "/404"
+  status = 404
+  force = true
+[[redirects]]
+  from = "/netlify/*"
+  to = "/404"
+  status = 404
+  force = true
+[[redirects]]
+  from = "/tests/*"
+  to = "/404"
+  status = 404
+  force = true
+[[redirects]]
+  from = "/package*"
+  to = "/404"
+  status = 404
+  force = true
+
 [[headers]]
   for = "/*"
   [headers.values]

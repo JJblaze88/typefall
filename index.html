@@ -13,14 +13,15 @@
   <meta property="og:site_name" content="Typefall">
   <meta property="og:title" content="Typefall — the typing test where failure has gravity">
   <meta property="og:description" content="Hit your target and get confetti. Miss it and every letter falls to the floor.">
-  <meta property="og:image" content="og.png">
+  <meta property="og:url" content="https://typefall-play.netlify.app/">
+  <meta property="og:image" content="https://typefall-play.netlify.app/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Typefall logo with letters tumbling onto a pile">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Typefall — the typing test where failure has gravity">
   <meta name="twitter:description" content="Hit your target and get confetti. Miss it and every letter falls to the floor.">
-  <meta name="twitter:image" content="og.png">
+  <meta name="twitter:image" content="https://typefall-play.netlify.app/og.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
@@ -48,7 +49,13 @@
         <button type="button" data-target="60">60</button>
       </div>
     </nav>
-    <p class="pb" id="pb" aria-live="polite">No best yet</p>
+    <div class="top-right">
+      <p class="pb" id="pb" aria-live="polite">No best yet</p>
+      <button type="button" class="lb-open" id="lb-open" aria-haspopup="dialog">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 4h10v3a5 5 0 0 1-10 0V4Z" fill="#F1C40F"/><path d="M7 5H4v1.5A3.5 3.5 0 0 0 7.5 10M17 5h3v1.5a3.5 3.5 0 0 1-3.5 3.5" fill="none" stroke="#F75C03" stroke-width="1.8" stroke-linecap="round"/><path d="M12 12v4" stroke="#D90368" stroke-width="2"/><rect x="8" y="16" width="8" height="4" rx="1.2" fill="#2274A5"/></svg>
+        <span>Top 10</span>
+      </button>
+    </div>
   </header>
 
   <main class="main">
@@ -97,6 +104,22 @@
           <div><dt>Time</dt><dd id="r-time">0s</dd></div>
         </dl>
       </div>
+      <form class="claim" id="claim" hidden novalidate>
+        <div class="claim-head">
+          <h3 class="claim-title"><span>Claim</span> <span>your</span> <span>spot!</span></h3>
+          <p class="claim-sub" id="claim-sub">You made the Top 10.</p>
+        </div>
+        <div class="claim-row">
+          <label for="nick" class="claim-label">Nickname</label>
+          <input id="nick" name="nick" type="text" maxlength="12" autocomplete="off" autocapitalize="off" spellcheck="false"
+            enterkeyhint="send" aria-describedby="claim-help claim-msg" placeholder="e.g. Speedy">
+          <span class="hp" aria-hidden="true"><label for="website">Website</label><input id="website" name="website" type="text" tabindex="-1" autocomplete="off"></span>
+          <button type="submit" class="btn claim-btn" id="claim-btn">Claim it</button>
+        </div>
+        <p class="claim-help" id="claim-help">Up to 12 letters, numbers or spaces. Just a nickname: no email, no sign-up.</p>
+        <p class="claim-msg" id="claim-msg" aria-live="polite"></p>
+      </form>
+      <p class="lb-note" id="lb-note" hidden></p>
       <figure class="spark">
         <figcaption><span>WPM over time</span><span class="legend"><i class="lg-line"></i>you <i class="lg-target"></i>target <i class="lg-err"></i>mistake</span></figcaption>
         <svg id="spark" viewBox="0 0 320 90" preserveAspectRatio="none" role="img" aria-label="WPM over time"></svg>
@@ -104,6 +127,7 @@
       <div class="r-actions">
         <button type="button" class="btn primary" id="again">Try again <kbd>Tab</kbd></button>
         <button type="button" class="btn" id="copy">Copy result</button>
+        <button type="button" class="btn lb-btn" id="lb-open-2" aria-haspopup="dialog">See the Top 10</button>
       </div>
       <p class="poke-hint" id="poke-hint" hidden>Psst: click the pile.</p>
     </section>
@@ -124,6 +148,27 @@
     </a>
   </footer>
 
+  <dialog class="lb" id="lb" aria-labelledby="lb-title">
+    <div class="lb-inner">
+      <div class="lb-top">
+        <h2 class="lb-title" id="lb-title">Top <span class="lb-ten"><span>1</span><span>0</span></span></h2>
+        <button type="button" class="lb-close" id="lb-close" aria-label="Close the leaderboard">&times;</button>
+      </div>
+      <div class="lb-tabs" role="tablist" aria-label="Test length">
+        <button type="button" role="tab" id="lbt-time-15" data-lb-mode="time-15" aria-controls="lb-panel">15s</button>
+        <button type="button" role="tab" id="lbt-time-30" data-lb-mode="time-30" aria-controls="lb-panel">30s</button>
+        <button type="button" role="tab" id="lbt-time-60" data-lb-mode="time-60" aria-controls="lb-panel">60s</button>
+        <button type="button" role="tab" id="lbt-words-25" data-lb-mode="words-25" aria-controls="lb-panel">25 words</button>
+      </div>
+      <div class="lb-panel" id="lb-panel" role="tabpanel" tabindex="0">
+        <div class="lb-cols" aria-hidden="true"><span>#</span><span>Nickname</span><span>WPM</span><span>Acc</span></div>
+        <ol class="lb-list" id="lb-list"></ol>
+        <div class="lb-status" id="lb-status" role="status"></div>
+      </div>
+      <p class="lb-foot">Nicknames and scores only, ranked by WPM, then accuracy. Just for fun: scores aren't verified.</p>
+    </div>
+  </dialog>
+
   <div id="fall-layer" class="fall-layer" aria-hidden="true"></div>
   <canvas id="confetti" class="confetti" aria-hidden="true"></canvas>
   <div id="sr" class="sr-only" aria-live="polite"></div>
@@ -132,6 +177,7 @@
   <script src="js/words.js" defer></script>
   <script src="js/gravity.js" defer></script>
   <script src="js/confetti.js" defer></script>
+  <script src="js/leaderboard.js" defer></script>
   <script src="js/app.js" defer></script>
 </body>
 </html>

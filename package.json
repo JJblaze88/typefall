@@ -1,0 +1,16 @@
+{
+  "name": "typefall",
+  "private": true,
+  "type": "module",
+  "description": "Typefall typing test, with a Netlify Function + Netlify Blobs Top 10 leaderboard",
+  "scripts": {
+    "dev": "netlify dev",
+    "test:unit": "node --test tests/leaderboard-core.test.mjs"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^11.1.4"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

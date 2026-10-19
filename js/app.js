@@ -51,6 +51,7 @@
     els.arena.classList.remove('running', 'collapsed', 'unstable');
     els.caret.style.visibility = '';
     document.body.classList.remove('has-pile');
+    if (window.Leaderboard) Leaderboard.reset();
     renderAll();
     updateHud();
     updatePb();
@@ -375,6 +376,7 @@
     res.hidden = false;
     S.result = r;
     updatePb();
+    if (window.Leaderboard) Leaderboard.onResult({ pass: r.pass, wpm: r.wpm, acc: r.acc, mode: modeKey(), target: settings.target });
     els.sr.textContent = `${$('r-title').textContent} ${r.wpm} words per minute, ${r.acc} percent accuracy. ${$('r-reason').textContent} Press Tab to try again.`;
     $('r-title').focus({ preventScroll: true });
   }
@@ -420,9 +422,13 @@
   els.arena.addEventListener('click', focusInput);
 
   document.addEventListener('keydown', e => {
+    if (window.Leaderboard && Leaderboard.isOpen) return; // the dialog handles its own keys (Esc closes it)
+    const claimOpen = !$('claim').hidden;
+    if (e.key === 'Escape' && document.activeElement && document.activeElement.closest('#claim')) return;
     if (e.key === 'Tab' && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
       const a = document.activeElement;
-      if (a === els.input || a === document.body || a === $('r-title') || a == null) {
+      // while "Claim your spot" is showing, Tab from the title moves into the nickname box instead
+      if (a === els.input || a === document.body || (a === $('r-title') && !claimOpen) || a == null) {
         e.preventDefault(); newRun(false); return;
       }
     }
@@ -460,9 +466,11 @@
 
   // poke the pile
   document.addEventListener('pointerdown', e => {
-    if (e.target.closest('button, a, input, .results, .arena, .top, .hud')) return;
+    if (e.target.closest('button, a, input, dialog, .results, .arena, .top, .hud')) return;
     Gravity.poke(e.clientX, e.clientY);
   });
+
+  document.addEventListener('leaderboard:close', () => { if (S && !S.finished) focusInput(); });
 
   addEventListener('resize', () => { if (S && !S.finished) placeCaret(); });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (S && !S.finished) placeCaret(); });

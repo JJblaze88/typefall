@@ -16,7 +16,9 @@ CHROME = os.environ.get('CHROME', '/usr/bin/google-chrome')
 errors, results = [], {}
 
 def watch(page, tag):
-    page.on('console', lambda m: m.type in ('error',) and errors.append(f'[{tag}] console: {m.text}'))
+    # A plain static server has no /api/leaderboard, so its 404 is expected here (the page shows "Leaderboard offline").
+    page.on('console', lambda m: m.type in ('error',) and '/api/leaderboard' not in (m.location or {}).get('url', '')
+            and errors.append(f'[{tag}] console: {m.text}'))
     page.on('pageerror', lambda e: errors.append(f'[{tag}] pageerror: {e}'))
 
 def words(page):
@@ -61,6 +63,10 @@ with sync_playwright() as p:
     results['pass'] = page.evaluate('() => ({...window.__typefall.state.result, samples: undefined, errSecs: undefined, chars: undefined})')
     results['pass_title'] = page.inner_text('#r-title')
     results['pb_text'] = page.inner_text('#pb')
+    # no leaderboard API on a static server: the results card says so and the test keeps working
+    page.wait_for_selector('#lb-note:not([hidden])', timeout=8000)
+    results['offline_note'] = page.inner_text('#lb-note')
+    results['claim_hidden'] = page.evaluate("document.getElementById('claim').hidden")
     page.wait_for_timeout(2500)
     page.screenshot(path=f'{SHOTS}/desktop-success-card.png')
 
@@ -128,7 +134,7 @@ with sync_playwright() as p:
 srv.shutdown()
 print(json.dumps(results, indent=2))
 print('ERRORS:', errors or 'none')
-ok = (results['pass']['pass'] and not results['fail']['pass'] and results['fallen'] > 20
+ok = ('offline' in results['offline_note'].lower() and results['claim_hidden'] and results['pass']['pass'] and not results['fail']['pass'] and results['fallen'] > 20
       and results['pile']['offscreen'] == 0 and not results['words_mode']['pass'] and not results['mobile_overflow'] and not errors)
 print('RESULT:', 'OK' if ok else 'PROBLEMS')
 sys.exit(0 if ok else 1)
